@@ -1,0 +1,197 @@
+:root {
+  --bg: #eaf2f8;
+  --card: #ffffff;
+  --text: #1e3148;
+  --muted: #5b6e84;
+  --line: #d3e0ec;
+  --blue: #3a6ea5;
+  --blue-soft: #dbe8f4;
+  --gold: #b88a1e;
+  --gold-soft: #f7efd9;
+  --green: #3d7a57;
+  --green-soft: #e0f0e6;
+  --red: #a94442;
+  --red-soft: #f7e3e2;
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+html { font-size: 20px; -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.45;
+}
+
+main { max-width: 760px; margin: 0 auto; padding: 16px 16px 80px; }
+
+h1, h2, h3 { line-height: 1.2; margin: 0 0 12px; }
+h1 { font-size: 1.6rem; }
+h2 { font-size: 1.3rem; }
+h3 { font-size: 1.1rem; }
+
+p { margin: 0 0 12px; }
+
+.muted { color: var(--muted); }
+.loading { text-align: center; color: var(--muted); padding: 40px 0; }
+
+/* ---------- hlavička ---------- */
+
+.top {
+  position: sticky; top: 0; z-index: 10;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 2px 8px rgba(30, 49, 72, .06);
+}
+
+.brand {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 8px 16px 4px;
+  font-size: 1.3rem; font-weight: 700; color: var(--gold);
+}
+.brand img { border-radius: 10px; }
+
+.tabs {
+  display: flex; max-width: 760px; margin: 0 auto;
+}
+.tabs button {
+  flex: 1;
+  background: none; border: 0; border-bottom: 4px solid transparent;
+  padding: 12px 4px;
+  font: inherit; font-size: .9rem; font-weight: 600; color: var(--muted);
+  cursor: pointer;
+}
+.tabs button.active { color: var(--blue); border-bottom-color: var(--gold); }
+
+/* ---------- tlačítka a formuláře ---------- */
+
+button, .btn {
+  font: inherit;
+  min-height: 52px;
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: 2px solid var(--blue);
+  background: var(--card);
+  color: var(--blue);
+  font-weight: 600;
+  cursor: pointer;
+}
+button:disabled { opacity: .5; cursor: default; }
+button.primary { background: var(--blue); color: #fff; }
+button.gold { background: var(--gold); border-color: var(--gold); color: #fff; }
+button.danger { border-color: var(--red); color: var(--red); }
+button.link { border: 0; background: none; min-height: 0; padding: 4px 0; text-decoration: underline; }
+button.big { width: 100%; font-size: 1.05rem; min-height: 60px; }
+
+.row { display: flex; flex-wrap: wrap; gap: 10px; }
+.row > button { flex: 1 1 auto; }
+
+label { display: block; font-weight: 600; margin: 16px 0 6px; }
+.hint { font-weight: 400; color: var(--muted); font-size: .85rem; }
+
+input[type=text], input[type=email], textarea {
+  width: 100%;
+  font: inherit;
+  padding: 12px 14px;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text);
+}
+input:focus, textarea:focus { outline: none; border-color: var(--blue); }
+textarea { min-height: 96px; resize: vertical; }
+
+.check {
+  display: flex; gap: 14px; align-items: flex-start;
+  font-weight: 400; margin: 0; padding: 14px 0;
+  border-bottom: 1px solid var(--line); cursor: pointer;
+}
+.check:last-child { border-bottom: 0; }
+.check input { width: 28px; height: 28px; flex: none; margin-top: 2px; accent-color: var(--blue); }
+
+.choice { display: flex; gap: 8px; flex-wrap: wrap; }
+.choice button { flex: 1 1 0; min-width: 120px; font-weight: 500; font-size: .9rem; }
+.choice button.on { background: var(--blue); color: #fff; }
+
+/* ---------- karty ---------- */
+
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 6px rgba(30, 49, 72, .05);
+}
+.card.cancelled { opacity: .85; border-color: var(--red); }
+
+.wish-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.wish-head h3 { margin: 0; }
+.stars { color: var(--gold); font-size: 1.1rem; white-space: nowrap; letter-spacing: 2px; }
+.wish p { white-space: pre-wrap; }
+.wish .note { background: var(--gold-soft); border-radius: 10px; padding: 10px 12px; }
+.wish .photo { display: block; margin: 12px 0; }
+.wish .photo img { max-width: 100%; max-height: 320px; border-radius: 10px; display: block; }
+.wish .actions { margin-top: 14px; }
+
+.tag {
+  display: inline-block; padding: 4px 12px; border-radius: 999px;
+  font-size: .85rem; font-weight: 600; margin: 8px 0;
+}
+.tag.tip { background: var(--blue-soft); color: var(--blue); }
+
+.alert { border-radius: 10px; padding: 12px 14px; margin: 12px 0; font-weight: 600; }
+.alert.red { background: var(--red-soft); color: var(--red); }
+.alert.gold { background: var(--gold-soft); color: #7a5b10; }
+
+/* skrytá část – nákup */
+.buy {
+  margin-top: 16px; padding: 14px; border-radius: 12px;
+  background: var(--blue-soft);
+}
+.buy.free { background: #f2f6fa; }
+.buy.done { background: var(--green-soft); }
+.buy .state { font-weight: 700; margin-bottom: 8px; }
+.buy .state small { font-weight: 400; color: var(--muted); }
+.buy button { margin-top: 8px; }
+
+/* výběr osoby */
+.people { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+.people button { flex: 1 1 140px; font-weight: 600; }
+.people button.on { background: var(--gold); border-color: var(--gold); color: #fff; }
+.people .count { display: block; font-weight: 400; font-size: .8rem; }
+
+/* přihlášení */
+.login { text-align: center; padding-top: 32px; }
+.login img { width: 160px; height: 160px; border-radius: 32px; margin-bottom: 16px; }
+.login h1 { color: var(--gold); font-size: 2rem; }
+.login form { text-align: left; margin-top: 24px; }
+.login button { margin-top: 16px; }
+
+.empty { text-align: center; color: var(--muted); padding: 24px 8px; }
+
+.photo-edit img { max-width: 100%; max-height: 240px; border-radius: 10px; display: block; margin-bottom: 10px; }
+
+.member { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.member:last-child { border-bottom: 0; }
+.member small { display: block; color: var(--muted); word-break: break-all; }
+
+/* upozornění dole */
+.toast {
+  position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
+  max-width: calc(100% - 32px);
+  background: var(--text); color: #fff;
+  padding: 14px 22px; border-radius: 12px;
+  font-weight: 600; box-shadow: 0 4px 16px rgba(0, 0, 0, .2);
+  z-index: 100;
+}
+.toast.error { background: var(--red); }
+
+@media (max-width: 480px) {
+  html { font-size: 18px; }
+  .tabs button { font-size: .8rem; }
+}

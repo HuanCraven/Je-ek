@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ježíšek</title>
+  <meta name="description" content="Rodinný seznam vánočních přání">
+  <meta name="theme-color" content="#eaf2f8">
+  <link rel="icon" type="image/png" href="img/favicon.png">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top" id="top" hidden>
+    <div class="brand">
+      <img src="img/logo-192.png" alt="" width="44" height="44">
+      <span>Ježíšek</span>
+    </div>
+    <nav class="tabs" id="tabs">
+      <button data-view="mine">Moje přání</button>
+      <button data-view="others">Přání ostatních</button>
+      <button data-view="settings">Nastavení</button>
+    </nav>
+  </header>
+
+  <main id="app">
+    <p class="loading">Načítám…</p>
+  </main>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
