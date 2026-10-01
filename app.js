@@ -376,8 +376,10 @@ function chipButton(w, on) {
 
 function buyerControls(w, p) {
   const note = h('input', { type: 'text', value: p.note, placeholder: 'např. objednáno na Alze, přijde 10. 12.' });
-  return h('div', {},
+  // ovládání je sbalené, aby karta nezabírala půl obrazovky
+  return h(w.cancelled ? 'div' : 'details', { class: 'buy-edit' },
     !w.cancelled && [
+      h('summary', {}, 'Změnit stav nebo poznámku'),
       h('label', {}, 'Jak to vypadá s nákupem?'),
       h('div', { class: 'choice' }, Object.entries(STATUS).map(([key, label]) => h('button', {
         class: p.status === key ? 'on' : '',

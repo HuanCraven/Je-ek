@@ -158,6 +158,14 @@ textarea { min-height: 96px; resize: vertical; }
 .buy .state { font-weight: 700; margin-bottom: 8px; }
 .buy .state small { font-weight: 400; color: var(--muted); }
 .buy button { margin-top: 8px; }
+.buy p { margin-bottom: 4px; }
+.buy-edit summary {
+  cursor: pointer; font-weight: 600; color: var(--blue);
+  padding: 8px 0; list-style: none;
+}
+.buy-edit summary::-webkit-details-marker { display: none; }
+.buy-edit summary::before { content: '▸ '; }
+.buy-edit[open] summary::before { content: '▾ '; }
 
 /* výběr osoby */
 .people { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
