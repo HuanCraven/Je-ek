@@ -27,7 +27,51 @@ body {
   line-height: 1.45;
 }
 
-main { max-width: 760px; margin: 0 auto; padding: 16px 16px 80px; }
+main { max-width: 760px; margin: 0 auto; padding: 16px 16px 80px; min-width: 0; }
+
+/* ---------- rozvržení: přehled vlevo ---------- */
+
+.layout { max-width: 1160px; margin: 0 auto; }
+.side { padding: 16px 16px 0; }
+
+.side details {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 4px 16px;
+}
+.side summary {
+  cursor: pointer; font-weight: 700; color: var(--blue);
+  padding: 10px 0; list-style: none;
+}
+.side summary::-webkit-details-marker { display: none; }
+.side summary::before { content: '▸ '; }
+.side details[open] summary::before { content: '▾ '; }
+
+.side-group { padding: 8px 0; border-top: 1px solid var(--line); }
+.side-name { display: flex; justify-content: space-between; font-weight: 700; color: var(--gold); font-size: .9rem; }
+.side-count { color: var(--muted); font-weight: 400; }
+.side ul { list-style: none; margin: 4px 0 0; padding: 0; }
+.side-item {
+  display: flex; gap: 8px; align-items: baseline; width: 100%;
+  min-height: 0; padding: 6px 8px; border: 0; border-radius: 8px;
+  background: none; color: var(--text); font-weight: 400; font-size: .85rem; text-align: left;
+}
+.side-item:hover { background: var(--blue-soft); }
+.side-stars { color: var(--gold); font-size: .7rem; flex: none; width: 2.6em; }
+.side-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mark { flex: none; font-size: .8rem; color: var(--blue); }
+.mark.done { color: var(--green); font-weight: 700; }
+.side-empty { color: var(--muted); font-size: .8rem; margin: 4px 8px; }
+.side-legend { color: var(--muted); font-size: .75rem; margin: 8px 0; border-top: 1px solid var(--line); padding-top: 8px; }
+
+@media (min-width: 1000px) {
+  .layout { display: grid; grid-template-columns: 300px 1fr; gap: 8px; align-items: start; }
+  .side { position: sticky; top: 110px; max-height: calc(100vh - 120px); overflow-y: auto; padding-bottom: 16px; }
+  .side summary { pointer-events: none; }
+  .side summary::before, .side details[open] summary::before { content: ''; }
+  main { margin: 0; }
+}
+
+.card.flash { box-shadow: 0 0 0 4px var(--gold); transition: box-shadow .3s; }
 
 h1, h2, h3 { line-height: 1.2; margin: 0 0 12px; }
 h1 { font-size: 1.6rem; }
@@ -202,4 +246,9 @@ textarea { min-height: 96px; resize: vertical; }
 @media (max-width: 480px) {
   html { font-size: 18px; }
   .tabs button { font-size: .8rem; }
+}
+
+@media (min-width: 1000px) {
+  .layout:has(.side[hidden]) { display: block; }
+  .layout:has(.side[hidden]) main { margin: 0 auto; }
 }

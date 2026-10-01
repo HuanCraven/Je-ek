@@ -13,6 +13,7 @@ const PRIORITY = { 1: 'Přál(a) bych si', 2: 'Moc bych si přál(a)', 3: 'Nejv�
 
 const app = document.getElementById('app');
 const top = document.getElementById('top');
+const side = document.getElementById('side');
 const toastEl = document.getElementById('toast');
 
 let email = load('email');
@@ -115,16 +116,71 @@ document.getElementById('tabs').addEventListener('click', e => {
 function render() {
   top.hidden = false;
   for (const b of document.querySelectorAll('#tabs button')) b.classList.toggle('active', b.dataset.view === view);
-  fill(app, 
+  fill(app,
     view === 'others' ? renderOthers() :
     view === 'settings' ? renderSettings() :
     renderMine());
+  renderSide();
+}
+
+// ---------------------------------------------------------------- přehled vlevo
+
+/** Kompaktní seznam všech přání (moje + ostatních), seskupený podle lidí. */
+function renderSide() {
+  side.hidden = false;
+  const me = state.me.id;
+  const groups = [
+    { id: me, name: 'Já', wishes: state.my_wishes, mine: true },
+    ...state.members.filter(m => m.id !== me).map(m => ({
+      id: m.id, name: m.name,
+      wishes: state.others_wishes.filter(w => w.owner_id === m.id && !w.cancelled),
+    })),
+  ];
+
+  const mark = w => {
+    const p = w.purchase;
+    if (!p) return w.contributors?.length ? h('span', { class: 'mark', title: 'Někdo se chce složit' }, '◦') : null;
+    return p.status === 'koupeno'
+      ? h('span', { class: 'mark done', title: 'Koupeno' }, '✓')
+      : h('span', { class: 'mark busy', title: STATUS[p.status] }, '●');
+  };
+
+  const list = groups.map(g => h('div', { class: 'side-group' },
+    h('div', { class: 'side-name' }, g.name, h('span', { class: 'side-count' }, g.wishes.length)),
+    g.wishes.length
+      ? h('ul', {}, g.wishes.map(w => h('li', {},
+          h('button', {
+            class: 'side-item',
+            onclick: () => jumpTo(w, g),
+          }, h('span', { class: 'side-stars' }, '★'.repeat(w.priority)), h('span', { class: 'side-title' }, w.title), !g.mine && mark(w)))))
+      : h('p', { class: 'side-empty' }, 'zatím nic')));
+
+  // na úzké obrazovce je přehled sbalený nahoře, na široké je trvale vlevo
+  const wasOpen = side.querySelector('details')?.open;
+  fill(side, h('details', { open: wasOpen || matchMedia('(min-width: 1000px)').matches },
+    h('summary', {}, 'Přehled všech přání'),
+    list,
+    h('p', { class: 'side-legend' }, '● někdo kupuje · ✓ koupeno · ◦ chtějí se složit')));
+}
+
+function jumpTo(w, g) {
+  if (g.mine) view = 'mine';
+  else { view = 'others'; person = g.id; save('person', person); }
+  save('view', view);
+  render();
+  const card = document.getElementById('w-' + w.id);
+  if (!card) return;
+  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  card.classList.add('flash');
+  setTimeout(() => card.classList.remove('flash'), 1600);
+  if (!matchMedia('(min-width: 1000px)').matches) side.querySelector('details').open = false;
 }
 
 // ---------------------------------------------------------------- přihlášení
 
 function renderLogin(message) {
   top.hidden = true;
+  side.hidden = true;
   const input = h('input', { type: 'email', id: 'email', autocomplete: 'email', required: true, placeholder: 'např. jana@seznam.cz' });
   const button = h('button', { class: 'primary big', type: 'submit' }, 'Vstoupit');
   fill(app, h('div', { class: 'login' },
@@ -179,7 +235,7 @@ function renderMine() {
 }
 
 function wishCard(w, actions, extra) {
-  return h('div', { class: 'card wish' + (w.cancelled ? ' cancelled' : '') },
+  return h('div', { class: 'card wish' + (w.cancelled ? ' cancelled' : ''), id: 'w-' + w.id },
     h('div', { class: 'wish-head' },
       h('h3', {}, w.title),
       h('span', { class: 'stars', title: PRIORITY[w.priority] }, stars(w.priority))),
