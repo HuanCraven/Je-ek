@@ -38,6 +38,10 @@ V Supabase → Edge Functions → Secrets nastav:
 
 Bez nich se upozornění jen hromadí v databázi a nic se neposílá.
 
+## Udržování v chodu
+
+Bezplatný Supabase uspí projekt po 7 dnech bez provozu. GitHub Actions (`.github/workflows/keepalive.yml`) proto každé 3 dny pošle do databáze drobný dotaz. Když dotaz selže (např. projekt je přesto uspaný), přijde od GitHubu e-mail o neúspěšném běhu. Pak je potřeba projekt v Supabase obnovit (Restore).
+
 ## Nasazení
 
 GitHub → Settings → Pages → Deploy from a branch → vybrat větev a `/ (root)`.
