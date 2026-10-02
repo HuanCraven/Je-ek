@@ -20,6 +20,7 @@ let email = load('email');
 let state = null;             // výsledek get_state
 let view = load('view') || 'mine';
 let person = load('person');  // vybraná osoba v „Přání ostatních“
+let recipient = load('recipient');  // vybraná osoba v „Další obdarování“
 
 // ---------------------------------------------------------------- pomocné
 
@@ -118,6 +119,7 @@ function render() {
   for (const b of document.querySelectorAll('#tabs button')) b.classList.toggle('active', b.dataset.view === view);
   fill(app,
     view === 'others' ? renderOthers() :
+    view === 'extra' ? renderExtra() :
     view === 'settings' ? renderSettings() :
     renderMine());
   renderSide();
@@ -135,6 +137,10 @@ function renderSide() {
       id: m.id, name: m.name,
       wishes: state.others_wishes.filter(w => w.owner_id === m.id && !w.cancelled),
     })),
+    ...state.recipients.map((r, i) => ({
+      id: r.id, name: r.name, extra: true, first: i === 0,
+      wishes: state.others_wishes.filter(w => w.recipient_id === r.id && !w.cancelled),
+    })),
   ];
 
   const mark = w => {
@@ -146,13 +152,14 @@ function renderSide() {
   };
 
   const list = groups.map(g => h('div', { class: 'side-group' },
+    g.first && h('div', { class: 'side-section' }, 'Další obdarování'),
     h('div', { class: 'side-name' }, g.name, h('span', { class: 'side-count' }, g.wishes.length)),
     g.wishes.length
       ? h('ul', {}, g.wishes.map(w => h('li', {},
           h('button', {
             class: 'side-item',
             onclick: () => jumpTo(w, g),
-          }, h('span', { class: 'side-stars' }, '★'.repeat(w.priority)), h('span', { class: 'side-title' }, w.title), !g.mine && mark(w)))))
+          }, h('span', { class: 'side-stars' }, g.extra ? '🎁' : '★'.repeat(w.priority)), h('span', { class: 'side-title' }, w.title), !g.mine && mark(w)))))
       : h('p', { class: 'side-empty' }, 'zatím nic')));
 
   // na úzké obrazovce je přehled sbalený nahoře, na široké je trvale vlevo
@@ -165,6 +172,7 @@ function renderSide() {
 
 function jumpTo(w, g) {
   if (g.mine) view = 'mine';
+  else if (g.extra) { view = 'extra'; recipient = g.id; save('recipient', recipient); }
   else { view = 'others'; person = g.id; save('person', person); }
   save('view', view);
   render();
@@ -238,8 +246,8 @@ function wishCard(w, actions, extra) {
   return h('div', { class: 'card wish' + (w.cancelled ? ' cancelled' : ''), id: 'w-' + w.id },
     h('div', { class: 'wish-head' },
       h('h3', {}, w.title),
-      h('span', { class: 'stars', title: PRIORITY[w.priority] }, stars(w.priority))),
-    h('p', { class: 'muted', style: 'font-size:.85rem' }, PRIORITY[w.priority]),
+      !w.recipient_id && h('span', { class: 'stars', title: PRIORITY[w.priority] }, stars(w.priority))),
+    !w.recipient_id && h('p', { class: 'muted', style: 'font-size:.85rem' }, PRIORITY[w.priority]),
     w.photo_path && h('a', { class: 'photo', href: photoUrl(w.photo_path), target: '_blank' },
       h('img', { src: photoUrl(w.photo_path), alt: w.title, loading: 'lazy' })),
     w.description && h('p', {}, w.description),
@@ -255,8 +263,11 @@ function removeWish(button, w) {
 
 // ---------------------------------------------------------------- formulář přání
 
-function renderForm(w, ownerId) {
-  const isTip = ownerId !== state.me.id;
+/** ownerId = člen, pro kterého je přání; recipientId = osoba mimo aplikaci (pak ownerId je null). */
+function renderForm(w, ownerId, recipientId = null) {
+  const isGift = !!recipientId;
+  const isTip = !isGift && ownerId !== state.me.id;
+  const rName = isGift && state.recipients.find(r => r.id === recipientId)?.name;
   let priority = w?.priority ?? 1;
   let photoPath = w?.photo_path ?? null;
   let photoFile = null;
@@ -305,6 +316,7 @@ function renderForm(w, ownerId) {
         await rpc('save_wish', {
           p_id: w?.id ?? null, p_owner_id: ownerId, p_title: title.value,
           p_description: desc.value, p_priority: priority, p_note: note.value, p_photo_path: photoPath,
+          p_recipient_id: recipientId,
         });
         await refresh();
         toast('Uloženo');
@@ -315,14 +327,14 @@ function renderForm(w, ownerId) {
       }
     },
   },
-    h('h2', {}, w ? 'Upravit přání' : isTip ? `Tip na dárek pro: ${name(ownerId)}` : 'Nové přání'),
+    h('h2', {}, isGift ? `${w ? 'Upravit dárek' : 'Dárek'} pro: ${rName}` : w ? 'Upravit přání' : isTip ? `Tip na dárek pro: ${name(ownerId)}` : 'Nové přání'),
     isTip && h('p', { class: 'muted' }, `${name(ownerId)} tento tip neuvidí. Uvidí ho jen ostatní.`),
     h('label', { for: 'f-title' }, 'Název ', h('span', { class: 'hint' }, '(povinné)')),
     title,
     h('label', { for: 'f-desc' }, 'Popis ', h('span', { class: 'hint' }, '(velikost, barva, kde se dá koupit…)')),
     desc,
-    h('label', {}, 'Jak moc si to přeješ?'),
-    prio,
+    !isGift && h('label', {}, 'Jak moc si to přeješ?'),
+    !isGift && prio,
     h('label', { for: 'f-note' }, 'Poznámka'),
     note,
     h('label', {}, 'Fotka'),
@@ -380,15 +392,70 @@ function renderOthers() {
     h('button', { class: 'big', onclick: () => renderForm(null, person) }, `+ Přidat tip na dárek pro: ${who}`));
 }
 
+// ---------------------------------------------------------------- další obdarování
+
+const giftsLabel = n => `${n} ${n === 1 ? 'dárek' : n >= 2 && n <= 4 ? 'dárky' : 'dárků'}`;
+
+function renderExtra() {
+  const list = state.recipients;
+  const count = id => state.others_wishes.filter(w => w.recipient_id === id && !w.cancelled).length;
+
+  const addPerson = e => {
+    const n = prompt('Jméno osoby (např. Babička Marie):');
+    if (!n?.trim()) return;
+    act(e.target, async () => { recipient = await rpc('save_recipient', { p_id: null, p_name: n }); save('recipient', recipient); }, 'Osoba přidána');
+  };
+
+  const head = [
+    h('h1', {}, 'Další obdarování'),
+    h('p', { class: 'muted' }, 'Dárky pro lidi, kteří do aplikace nechodí (babičky, kmotři, sousedé…). Tady vidí a upravují všichni všechno.'),
+  ];
+  if (!list.length) return h('div', {}, head,
+    h('p', { class: 'empty' }, 'Zatím tu nikdo není.'),
+    h('button', { class: 'gold big', onclick: addPerson }, '+ Přidat osobu'));
+
+  if (!list.some(r => r.id === recipient)) recipient = list[0].id;
+  const r = list.find(x => x.id === recipient);
+  const gifts = state.others_wishes.filter(w => w.recipient_id === r.id);
+
+  return h('div', {}, head,
+    h('div', { class: 'people' },
+      list.map(x => h('button', {
+        class: x.id === recipient ? 'on' : '',
+        onclick: () => { recipient = x.id; save('recipient', recipient); render(); },
+      }, x.name, h('span', { class: 'count' }, giftsLabel(count(x.id))))),
+      h('button', { onclick: addPerson }, '+ Přidat osobu')),
+    h('h2', {}, `Dárky pro: ${r.name}`),
+    gifts.length ? gifts.map(othersCard) : h('p', { class: 'empty' }, 'Zatím tu žádný dárek není.'),
+    h('button', { class: 'gold big', onclick: () => renderForm(null, null, r.id) }, `+ Přidat dárek pro: ${r.name}`),
+    h('div', { class: 'row', style: 'margin-top:24px' },
+      h('button', {
+        onclick: e => {
+          const n = prompt('Nové jméno:', r.name);
+          if (n?.trim()) act(e.target, () => rpc('save_recipient', { p_id: r.id, p_name: n }), 'Přejmenováno');
+        },
+      }, 'Přejmenovat'),
+      h('button', {
+        class: 'danger',
+        onclick: e => {
+          if (confirm(`Opravdu odebrat ${r.name}? Smažou se i všechny dárky pro tuto osobu.`))
+            act(e.target, () => rpc('delete_recipient', { p_id: r.id }), 'Odebráno');
+        },
+      }, 'Odebrat osobu')));
+}
+
 function othersCard(w) {
   const me = state.me.id;
   const p = w.purchase;
   const iBuy = p?.buyer_id === me;
   const iChip = w.contributors.includes(me);
   const mineTip = w.author_id === me && w.author_id !== w.owner_id;
+  const isGift = !!w.recipient_id;
 
   const alerts = [
-    w.cancelled && h('div', { class: 'alert red' }, `${name(w.owner_id)} toto přání zrušil(a). Pokud už jsi dárek koupil(a), domluvte se.`),
+    w.cancelled && h('div', { class: 'alert red' }, isGift
+      ? 'Tento dárek byl zrušen. Pokud už jsi ho koupil(a), domluvte se.'
+      : `${name(w.owner_id)} toto přání zrušil(a). Pokud už jsi dárek koupil(a), domluvte se.`),
     iBuy && p.changed && !w.cancelled && h('div', { class: 'alert gold' },
       'Přání bylo mezitím upraveno – zkontroluj, co se změnilo. ',
       h('button', { class: 'link', onclick: e => act(e.target, () => rpc('mark_seen', { p_wish: w.id })) }, 'Beru na vědomí')),
@@ -413,12 +480,17 @@ function othersCard(w) {
   }
 
   return wishCard(w,
-    mineTip && [
+    isGift && !w.cancelled ? [
+      h('button', { onclick: () => renderForm(w, null, w.recipient_id) }, 'Upravit'),
+      h('button', { class: 'danger', onclick: e => removeWish(e.target, w) }, 'Smazat'),
+    ] : mineTip && [
       h('button', { onclick: () => renderForm(w, w.owner_id) }, 'Upravit tip'),
       h('button', { class: 'danger', onclick: e => removeWish(e.target, w) }, 'Smazat tip'),
     ],
     [
-      w.author_id !== w.owner_id && h('span', { class: 'tag tip' }, `Tip od: ${w.author_id === me ? 'tebe' : name(w.author_id)}`),
+      isGift
+        ? h('span', { class: 'tag tip' }, `Zapsal(a): ${w.author_id === me ? 'ty' : name(w.author_id)}`)
+        : w.author_id !== w.owner_id && h('span', { class: 'tag tip' }, `Tip od: ${w.author_id === me ? 'tebe' : name(w.author_id)}`),
       ...alerts,
       buy,
     ]);

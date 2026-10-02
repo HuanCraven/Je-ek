@@ -7,6 +7,7 @@ Rodinný seznam vánočních přání. Každý si zapíše svá přání (vidí 
 - **Přihlášení:** jen e-mailem, bez hesla. Pustí dovnitř jen e-maily ze seznamu (Nastavení → Správa rodiny, vidí jen správce).
 - **Moje přání:** název, popis, priorita (1–3 ★), poznámka, fotka.
 - **Přání ostatních:** výběr osoby → její přání + tipy od ostatních. Stavy nákupu: *Volné → Kupuji → Objednáno → Koupeno*. Dá se „složit se“.
+- **Další obdarování:** dárky pro lidi mimo aplikaci (babičky…). Osobu i dárky přidává a upravuje kdokoli, všichni vidí vše včetně nákupů.
 - **Tip na dárek:** přání zapsané za někoho jiného. Ten ho nevidí.
 - **Zrušené přání:** když ho někdo kupuje, zůstane mu viditelné s upozorněním, dokud ho kupující neodebere.
 - **Nový ročník:** správce po Vánocích založí nový rok. Stará data zůstanou v databázi, nesplněná přání lze přenést.
