@@ -22,6 +22,10 @@ Rodinný seznam vánočních přání. Každý si zapíše svá přání (vidí 
   - Upozornění: tabulka `outbox` → edge funkce `send-notifications` (pg_cron každou hodinu v :07) → SMTP.
 - **Bezpečnost je záměrně minimální** (rodinná aplikace): kdo zná cizí e-mail ze seznamu, může se za něj přihlásit.
 
+## Změny databáze
+
+Migrace jsou v `supabase/migrations/`. SQL s příkazy `DROP` nebo `DELETE` je potřeba spustit ručně v [SQL editoru](https://supabase.com/dashboard/project/encicvbzmsvmxgjmytmx/sql/new), protože nástroj Supabase ho bez potvrzení odmítne. Staré verze funkcí se nemažou, jen se přesměrují na nové.
+
 ## Zprovoznění e-mailových upozornění
 
 V Supabase → Edge Functions → Secrets nastav:
