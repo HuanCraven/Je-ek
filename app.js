@@ -21,6 +21,7 @@ let state = null;             // výsledek get_state
 let view = load('view') || 'mine';
 let person = load('person');  // vybraná osoba v „Přání ostatních“
 let recipient = load('recipient');  // vybraná osoba v „Další obdarování“
+let buyer = null;                   // vybraný kupující v „Nákupy“ (null = já)
 
 // ---------------------------------------------------------------- pomocné
 
@@ -120,6 +121,7 @@ function render() {
   fill(app,
     view === 'others' ? renderOthers() :
     view === 'extra' ? renderExtra() :
+    view === 'buys' ? renderBuys() :
     view === 'settings' ? renderSettings() :
     renderMine());
   renderSide();
@@ -390,6 +392,54 @@ function renderOthers() {
     h('h2', {}, `${who} si přeje:`),
     wishes.length ? wishes.map(othersCard) : h('p', { class: 'empty' }, `${who} si zatím nic nezapsal(a).`),
     h('button', { class: 'big', onclick: () => renderForm(null, person) }, `+ Přidat tip na dárek pro: ${who}`));
+}
+
+// ---------------------------------------------------------------- nákupy
+
+/** Co kdo kupuje nebo na co se skládá. Vychází z others_wishes, takže dárky pro mě v něm nikdy nejsou. */
+function renderBuys() {
+  const me = state.me.id;
+  const who = buyer ?? me;
+  const people = [{ id: me, name: 'Já' }, ...state.members.filter(m => m.id !== me)];
+
+  const items = state.others_wishes.filter(w => w.purchase?.buyer_id === who || w.contributors.includes(who));
+  const targetOf = w => w.recipient_id
+    ? { key: 'r' + w.recipient_id, name: state.recipients.find(r => r.id === w.recipient_id)?.name ?? '?', g: { id: w.recipient_id, extra: true } }
+    : { key: 'm' + w.owner_id, name: name(w.owner_id), g: { id: w.owner_id } };
+
+  const groups = new Map();
+  for (const w of items) {
+    const t = targetOf(w);
+    if (!groups.has(t.key)) groups.set(t.key, { ...t, wishes: [] });
+    groups.get(t.key).wishes.push(w);
+  }
+
+  const role = w => w.purchase?.buyer_id === who
+    ? h('span', { class: 'buy-state' + (w.purchase.status === 'koupeno' ? ' done' : '') }, STATUS[w.purchase.status])
+    : h('span', { class: 'buy-state chip' }, 'skládá se');
+
+  const bought = items.filter(w => w.purchase?.buyer_id === who && w.purchase.status === 'koupeno').length;
+  const buying = items.filter(w => w.purchase?.buyer_id === who).length;
+  const label = who === me ? 'Kupuješ' : `${name(who)} kupuje`;
+
+  return h('div', {},
+    h('h1', {}, 'Nákupy'),
+    h('p', { class: 'muted' }, 'Přehled, co kdo kupuje nebo na co se skládá. Dárky pro tebe tu nikdy neuvidíš.'),
+    h('div', { class: 'people' }, people.map(p => h('button', {
+      class: p.id === who ? 'on' : '',
+      onclick: () => { buyer = p.id === me ? null : p.id; render(); },
+    }, p.name))),
+    items.length
+      ? [
+          h('p', { class: 'buy-sum' }, `${label} ${buying} ${buying === 1 ? 'dárek' : buying >= 2 && buying <= 4 ? 'dárky' : 'dárků'}, z toho koupeno ${bought}.`),
+          [...groups.values()].map(g => h('div', { class: 'card buy-list' },
+            h('h3', {}, g.name),
+            h('ul', {}, g.wishes.map(w => h('li', {},
+              h('button', { class: 'buy-row' + (w.cancelled ? ' cancelled' : ''), onclick: () => jumpTo(w, g.g) },
+                h('span', { class: 'buy-title' }, w.title, w.cancelled && ' (zrušeno)'),
+                role(w))))))),
+        ]
+      : h('p', { class: 'empty' }, who === me ? 'Zatím nic nekupuješ.' : `${name(who)} zatím nic nekupuje.`));
 }
 
 // ---------------------------------------------------------------- další obdarování

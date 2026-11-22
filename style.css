@@ -215,6 +215,23 @@ textarea { min-height: 96px; resize: vertical; }
 .buy-edit summary::before { content: '▸ '; }
 .buy-edit[open] summary::before { content: '▾ '; }
 
+/* nákupy */
+.buy-sum { font-weight: 600; }
+.buy-list { padding: 14px 18px; }
+.buy-list h3 { color: var(--gold); margin-bottom: 6px; }
+.buy-list ul { list-style: none; margin: 0; padding: 0; }
+.buy-row {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%;
+  min-height: 48px; padding: 8px 10px; border: 0; border-top: 1px solid var(--line); border-radius: 0;
+  background: none; color: var(--text); font-weight: 400; text-align: left;
+}
+.buy-list li:first-child .buy-row { border-top: 0; }
+.buy-row:hover { background: var(--blue-soft); }
+.buy-row.cancelled .buy-title { color: var(--red); }
+.buy-state { flex: none; font-size: .85rem; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: var(--blue-soft); color: var(--blue); }
+.buy-state.done { background: var(--green-soft); color: var(--green); }
+.buy-state.chip { background: var(--gold-soft); color: #7a5b10; }
+
 /* výběr osoby */
 .people { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
 .people button { flex: 1 1 140px; font-weight: 600; }
