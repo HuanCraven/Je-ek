@@ -117,7 +117,7 @@ document.getElementById('tabs').addEventListener('click', e => {
 
 function render() {
   top.hidden = false;
-  for (const b of document.querySelectorAll('#tabs button')) b.classList.toggle('active', b.dataset.view === view);
+  for (const b of document.querySelectorAll('#tabs button')) b.classList.toggle('active', b.dataset.view === (view === 'buys' ? 'others' : view));
   fill(app,
     view === 'others' ? renderOthers() :
     view === 'extra' ? renderExtra() :
@@ -383,7 +383,9 @@ function renderOthers() {
   const who = name(person);
 
   return h('div', {},
-    h('h1', {}, 'Přání ostatních'),
+    h('div', { class: 'title-row' },
+      h('h1', {}, 'Přání ostatních'),
+      h('button', { class: 'gold', onclick: () => setView('buys') }, '🛒 Co kdo kupuje')),
     h('p', { class: 'muted' }, 'Vyber, pro koho hledáš dárek. Co kdo kupuje, vidíte jen vy ostatní – obdarovaný ne.'),
     h('div', { class: 'people' }, others.map(m => h('button', {
       class: m.id === person ? 'on' : '',
@@ -423,7 +425,8 @@ function renderBuys() {
   const label = who === me ? 'Kupuješ' : `${name(who)} kupuje`;
 
   return h('div', {},
-    h('h1', {}, 'Nákupy'),
+    h('button', { class: 'link back', onclick: () => setView('others') }, '← Zpět na přání ostatních'),
+    h('h1', {}, 'Co kdo kupuje'),
     h('p', { class: 'muted' }, 'Přehled, co kdo kupuje nebo na co se skládá. Dárky pro tebe tu nikdy neuvidíš.'),
     h('div', { class: 'people' }, people.map(p => h('button', {
       class: p.id === who ? 'on' : '',
